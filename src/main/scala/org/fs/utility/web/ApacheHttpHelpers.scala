@@ -26,6 +26,7 @@ trait ApacheHttpHelpers {
   def PUT(uri: String) = RequestBuilder.put(uri)
   def DELETE(uri: String) = RequestBuilder.delete(uri)
 
+  /** SSL context which completely disables certificate detailed checks */
   val trustAllSslContext: SSLContext = {
     val trustAllCerts = Array[TrustManager](
       new X509TrustManager() {
@@ -39,12 +40,12 @@ trait ApacheHttpHelpers {
     sslContext
   }
 
-  def makeSimpleClientWithStore(): (HttpClient, CookieStore) = {
+  def simpleClientWithStore(sslContextOption: Option[SSLContext] = None): (HttpClient, CookieStore) = {
     val cookieStore = new BasicCookieStore()
     val httpClient = {
       val clientBuilder = HttpClients.custom()
       clientBuilder.setDefaultCookieStore(cookieStore)
-      clientBuilder.setSSLContext(trustAllSslContext)
+      sslContextOption map clientBuilder.setSSLContext
       clientBuilder.build()
     }
     (httpClient, cookieStore)
