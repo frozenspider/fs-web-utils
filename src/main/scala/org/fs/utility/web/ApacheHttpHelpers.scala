@@ -15,6 +15,7 @@ import org.apache.http.util.EntityUtils
 import javax.net.ssl._
 import org.apache.commons.io.IOUtils
 import org.apache.commons.codec.binary.Base64
+import scala.collection.GenTraversableOnce
 
 /**
  * @author FS
@@ -26,6 +27,7 @@ trait ApacheHttpHelpers {
   def PUT(uri: String) = RequestBuilder.put(uri)
   def DELETE(uri: String) = RequestBuilder.delete(uri)
 
+  /** SSL context which completely disables certificate detailed checks */
   val trustAllSslContext: SSLContext = {
     val trustAllCerts = Array[TrustManager](
       new X509TrustManager() {
@@ -39,12 +41,12 @@ trait ApacheHttpHelpers {
     sslContext
   }
 
-  def makeSimpleClientWithStore(): (HttpClient, CookieStore) = {
+  def simpleClientWithStore(sslContextOption: Option[SSLContext] = None): (HttpClient, CookieStore) = {
     val cookieStore = new BasicCookieStore()
     val httpClient = {
       val clientBuilder = HttpClients.custom()
       clientBuilder.setDefaultCookieStore(cookieStore)
-      clientBuilder.setSSLContext(trustAllSslContext)
+      sslContextOption map clientBuilder.setSSLContext
       clientBuilder.build()
     }
     (httpClient, cookieStore)
@@ -59,24 +61,42 @@ trait ApacheHttpHelpers {
   // Implicits
   //
 
+  /** Enables using RequestBuilder in place of HttpUriRequest */
   implicit def buildRequest(rb: RequestBuilder): HttpUriRequest =
     rb.build()
 
+  /** While this enhances the RequestBuilder with some shortcuts, its nature remains mutable */
   implicit class RichRequestBuilder(rb: RequestBuilder) {
-    def params(params: Map[String, String]): RequestBuilder = {
-      params.foreach {
-        case (n, v) => rb.addParameter(n, v)
+    def param(name: String, value: String): RequestBuilder =
+      rb.addParameter(name, value)
+
+    def params(params: Map[String, String]): RequestBuilder =
+      this.params(params.toSeq)
+
+    def params(params: Seq[(String, String)]): RequestBuilder =
+      params.foldLeft(rb) {
+        case (rb, (n, v)) => rb.param(n, v)
       }
-      rb
-    }
+
+    def header(name: String, value: String): RequestBuilder =
+      rb.addHeader(name, value)
+
+    def headers(headers: Map[String, String]): RequestBuilder =
+      this.headers(headers.toSeq)
+
+    def headers(headers: Seq[(String, String)]): RequestBuilder =
+      headers.foldLeft(rb) {
+        case (rb, (n, v)) => rb.header(n, v)
+      }
 
     def basicAuth(username: String, password: String): RequestBuilder = {
       val encoded = Base64.encodeBase64String(s"$username:$password".getBytes("UTF-8"))
-      rb.setHeader("Authorization", "Basic " + encoded)
+      rb.header("Authorization", s"Basic $encoded")
     }
   }
 
   implicit class RichHttpClient(client: HttpClient) {
+    /** Make a request, read the response completely and do the cleanup */
     def request(request: HttpUriRequest): SimpleHttpResponse = {
       val resp = client.execute(request)
       val entity = resp.getEntity
