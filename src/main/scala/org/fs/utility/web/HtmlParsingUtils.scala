@@ -26,8 +26,14 @@ trait HtmlParsingUtils {
 
   /** More appropriate version of trim than commons-lang3's StringUtils.strip() */
   private def trim(s: String): String = {
-    def isSpace(c: Char) = Character.isWhitespace(c) || Character.isSpaceChar(c)
-    s.dropWhile(isSpace).reverse.dropWhile(isSpace).reverse
+    def isNotSpace(c: Char) = !Character.isWhitespace(c) && !Character.isSpaceChar(c)
+    val startIdx = s.indexWhere(isNotSpace)
+    if (startIdx == -1)
+      ""
+    else {
+      val endIdx = s.lastIndexWhere(isNotSpace)
+      s.substring(startIdx, endIdx + 1)
+    }
   }
 }
 
