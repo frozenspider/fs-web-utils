@@ -14,14 +14,23 @@ trait HtmlParsingUtils {
 
   implicit class HtmlNodeSeq(ns: NodeSeq) {
     def filterByClass(c: String): NodeSeq =
-      ns filter (_.attribute("class") match {
-        case Some(Text(t)) => t split " " contains c
-        case _             => false
-      })
+      ns filter (_.classes contains c)
+
+    def findByClass(c: String): Option[Node] =
+      filterByClass(c).headOption
+
+    def cleanText: Seq[String] = ns map (_.cleanText)
   }
 
   implicit class HtmlNode(n: Node) {
     def cleanText: String = trim(n.text)
+
+    /** Finds all HTML classes defined for the node */
+    def classes: Seq[String] =
+      n.attribute("class") match {
+        case Some(Text(t)) => t split "[\\s]+"
+        case _             => Seq.empty
+      }
   }
 
   /** More appropriate version of trim than commons-lang3's StringUtils.strip() */
