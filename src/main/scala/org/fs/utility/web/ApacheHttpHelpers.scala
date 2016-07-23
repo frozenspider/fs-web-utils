@@ -110,6 +110,16 @@ trait ApacheHttpHelpers {
         EntityUtils.consume(entity)
       }
     }
+
+    /**
+     * Wait for the given delay before sending the request.
+     *
+     * @see request(HttpUriRequest)
+     */
+    def requestWithDelay(request: HttpUriRequest, delayMs: => Long): SimpleHttpResponse = {
+      Thread.sleep(delayMs)
+      this.request(request)
+    }
   }
 
   implicit class RichCookieStore(cs: CookieStore) {
