@@ -1,5 +1,5 @@
 name         := "fs-web-utils"
-version      := "0.3"
+version      := "0.3.1"
 scalaVersion := "2.11.7"
 
 EclipseKeys.withSource := true
@@ -10,6 +10,6 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules"    %% "scala-xml"       % "1.0.5",
   "org.ccil.cowan.tagsoup"    %  "tagsoup"         % "1.2.1",
   // Utility
-  "commons-io"                %  "commons-io"      % "2.4",
+  "commons-io"                %  "commons-io"      % "2.5",
   "commons-codec"             %  "commons-codec"   % "1.10"
 )
