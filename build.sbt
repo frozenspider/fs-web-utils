@@ -1,4 +1,4 @@
-name         := "scala-web-utils"
+name         := "fs-web-utils"
 version      := "0.3"
 scalaVersion := "2.11.7"
 
