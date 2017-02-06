@@ -1,6 +1,6 @@
 name         := "fs-web-utils"
 version      := "0.4"
-scalaVersion := "2.11.7"
+crossScalaVersions := Seq("2.11.7", "2.12.1")
 
 EclipseKeys.withSource := true
 EclipseKeys.createSrc  := EclipseCreateSrc.Default
