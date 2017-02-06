@@ -19,11 +19,13 @@ trait HtmlParsingUtils {
     def findByClass(c: String): Option[Node] =
       filterByClass(c).headOption
 
-    def cleanText: Seq[String] = ns map (_.cleanText)
+    /** Text trimmed from prefix and suffix (white)space characters */
+    def trimmedText: Seq[String] = ns map (_.trimmedText)
   }
 
   implicit class HtmlNode(n: Node) {
-    def cleanText: String = trim(n.text)
+    /** Text trimmed from from prefix and suffix (white)space characters */
+    def trimmedText: String = trim(n.text)
 
     /** Finds all HTML classes defined for the node */
     def classes: Seq[String] =
