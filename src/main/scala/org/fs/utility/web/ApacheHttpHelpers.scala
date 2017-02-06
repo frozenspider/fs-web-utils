@@ -2,8 +2,11 @@ package org.fs.utility.web
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+
 import scala.collection.JavaConversions._
-import scala.io.Source
+
+import org.apache.commons.codec.binary.Base64
+import org.apache.commons.io.IOUtils
 import org.apache.http.client.CookieStore
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpUriRequest
@@ -12,10 +15,8 @@ import org.apache.http.cookie.Cookie
 import org.apache.http.impl.client.BasicCookieStore
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
+
 import javax.net.ssl._
-import org.apache.commons.io.IOUtils
-import org.apache.commons.codec.binary.Base64
-import scala.collection.GenTraversableOnce
 
 /**
  * @author FS
@@ -67,31 +68,25 @@ trait ApacheHttpHelpers {
 
   /** While this enhances the RequestBuilder with some shortcuts, its nature remains mutable */
   implicit class RichRequestBuilder(rb: RequestBuilder) {
-    def param(name: String, value: String): RequestBuilder =
-      rb.addParameter(name, value)
+    def addParameters(params: Map[String, String]): RequestBuilder =
+      this.addParameters(params.toSeq)
 
-    def params(params: Map[String, String]): RequestBuilder =
-      this.params(params.toSeq)
-
-    def params(params: Seq[(String, String)]): RequestBuilder =
+    def addParameters(params: Seq[(String, String)]): RequestBuilder =
       params.foldLeft(rb) {
-        case (rb, (n, v)) => rb.param(n, v)
+        case (rb, (n, v)) => rb.addParameter(n, v)
       }
 
-    def header(name: String, value: String): RequestBuilder =
-      rb.addHeader(name, value)
+    def addHeaders(headers: Map[String, String]): RequestBuilder =
+      this.addHeaders(headers.toSeq)
 
-    def headers(headers: Map[String, String]): RequestBuilder =
-      this.headers(headers.toSeq)
-
-    def headers(headers: Seq[(String, String)]): RequestBuilder =
+    def addHeaders(headers: Seq[(String, String)]): RequestBuilder =
       headers.foldLeft(rb) {
-        case (rb, (n, v)) => rb.header(n, v)
+        case (rb, (n, v)) => rb.addHeader(n, v)
       }
 
-    def basicAuth(username: String, password: String): RequestBuilder = {
+    def addBasicAuth(username: String, password: String): RequestBuilder = {
       val encoded = Base64.encodeBase64String(s"$username:$password".getBytes("UTF-8"))
-      rb.header("Authorization", s"Basic $encoded")
+      rb.addHeader("Authorization", s"Basic $encoded")
     }
   }
 
@@ -109,16 +104,6 @@ trait ApacheHttpHelpers {
       } finally {
         EntityUtils.consume(entity)
       }
-    }
-
-    /**
-     * Wait for the given delay before sending the request.
-     *
-     * @see request(HttpUriRequest)
-     */
-    def requestWithDelay(request: HttpUriRequest, delayMs: => Long): SimpleHttpResponse = {
-      Thread.sleep(delayMs)
-      this.request(request)
     }
   }
 
