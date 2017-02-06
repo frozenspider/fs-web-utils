@@ -1,5 +1,5 @@
 name         := "fs-web-utils"
-version      := "0.3.1"
+version      := "0.4"
 scalaVersion := "2.11.7"
 
 EclipseKeys.withSource := true
