@@ -4,8 +4,15 @@ import scala.xml._
 
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 
+import javax.xml.parsers.SAXParserFactory
+
+/**
+ * Utilities for basic HTML parsing
+ *
+ * @author FS
+ */
 trait HtmlParsingUtils {
-  private val saxFactory = new SAXFactoryImpl()
+  import HtmlParsingUtils._
 
   def parseElement(bodyString: String): Elem = {
     val xmlParser = XML.withSAXParser(saxFactory.newSAXParser())
@@ -48,4 +55,6 @@ trait HtmlParsingUtils {
   }
 }
 
-object HtmlParsingUtils extends HtmlParsingUtils
+object HtmlParsingUtils extends HtmlParsingUtils {
+  val saxFactory: SAXParserFactory = new SAXFactoryImpl()
+}
