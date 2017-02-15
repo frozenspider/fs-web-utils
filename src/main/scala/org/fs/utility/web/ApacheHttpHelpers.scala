@@ -1,5 +1,6 @@
 package org.fs.utility.web
 
+import java.nio.charset.Charset
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 
@@ -10,6 +11,7 @@ import org.apache.commons.io.IOUtils
 import org.apache.http.client._
 import org.apache.http.client.methods._
 import org.apache.http.cookie.Cookie
+import org.apache.http.entity.ContentType
 import org.apache.http.impl.client._
 import org.apache.http.util.EntityUtils
 
@@ -46,11 +48,21 @@ trait ApacheHttpHelpers {
   case class SimpleHttpResponse(code: Int, headers: Seq[(String, String)], body: Array[Byte]) {
     import ApacheHttpHelpers.Headers._
 
-    /** Converts the body to a UTF-8 string */
-    lazy val bodyString: String = bodyString("UTF-8")
+    /** @return content charset, if specified */
+    lazy val charsetOption: Option[Charset] =
+      contentTypeOption map ContentType.parse map (_.getCharset)
 
-    /** Converts the body to a string with the specified encoding */
-    def bodyString(charset: String): String = new String(body, charset)
+    /** @return content charset, if specified, or default ISO-8859-1 as per HTTP/1.1 standard */
+    lazy val charset: Charset =
+      charsetOption getOrElse ContentType.DEFAULT_TEXT.getCharset
+
+    /** @return body as a string using the content charset if any, or ISO-8859-1 as per HTTP/1.1 */
+    lazy val bodyString: String =
+      new String(body, charset)
+
+    /** @return body as a UTF-8 string */
+    lazy val bodyStringUTF8: String =
+      new String(body, "UTF-8")
 
     /**
      * Obtain the value of a header with a given name, if known.
@@ -58,10 +70,10 @@ trait ApacheHttpHelpers {
      */
     def findHeader(headerName: String): Option[String] = headers find (_._1 == headerName) map (_._2)
 
-    /** Obtains the Content-Type header, if known. */
+    /** @return Content-Type header, if known. */
     lazy val contentTypeOption: Option[String] = findHeader(`Content-Type`)
 
-    /** Obtains the Content-Encoding header, if known. */
+    /** @return Content-Encoding header, if known. */
     lazy val contentEncodingOption: Option[String] = findHeader(`Content-Encoding`)
   }
 
@@ -103,7 +115,6 @@ trait ApacheHttpHelpers {
       val resp = client.execute(request)
       val entity = resp.getEntity
       try {
-        resp.getEntity.getContentType
         SimpleHttpResponse(
           code = resp.getStatusLine.getStatusCode,
           headers = resp.getAllHeaders map (h => (h.getName -> h.getValue)),
