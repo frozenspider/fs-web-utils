@@ -1,5 +1,7 @@
 package org.fs.utility.web
 
+import org.fs.utility.web.http.ApacheHttpHelpers
+
 /**
  * Imports aggregator trait for fs-web-utils
  *

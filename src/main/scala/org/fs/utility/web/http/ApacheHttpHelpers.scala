@@ -1,6 +1,5 @@
-package org.fs.utility.web
+package org.fs.utility.web.http
 
-import java.nio.charset.Charset
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 
@@ -11,7 +10,6 @@ import org.apache.commons.io.IOUtils
 import org.apache.http.client._
 import org.apache.http.client.methods._
 import org.apache.http.cookie.Cookie
-import org.apache.http.entity.ContentType
 import org.apache.http.impl.client._
 import org.apache.http.util.EntityUtils
 
@@ -32,7 +30,8 @@ trait ApacheHttpHelpers {
   def DELETE(uri: String) = RequestBuilder.delete(uri)
 
   /** SSL context which completely disables certificate detailed checks */
-  def trustAllSslContext: SSLContext = ApacheHttpHelpers.trustAllSslContext
+  def trustAllSslContext: SSLContext =
+    ApacheHttpHelpers.trustAllSslContext
 
   def simpleClientWithStore(sslContextOption: Option[SSLContext] = None): (HttpClient, CookieStore) = {
     val cookieStore = new BasicCookieStore()
@@ -43,38 +42,6 @@ trait ApacheHttpHelpers {
       clientBuilder.build()
     }
     (httpClient, cookieStore)
-  }
-
-  case class SimpleHttpResponse(code: Int, headers: Seq[(String, String)], body: Array[Byte]) {
-    import ApacheHttpHelpers.Headers._
-
-    /** @return content charset, if specified */
-    lazy val charsetOption: Option[Charset] =
-      contentTypeOption map ContentType.parse map (_.getCharset)
-
-    /** @return content charset, if specified, or default ISO-8859-1 as per HTTP/1.1 standard */
-    lazy val charset: Charset =
-      charsetOption getOrElse ContentType.DEFAULT_TEXT.getCharset
-
-    /** @return body as a string using the content charset if any, or ISO-8859-1 as per HTTP/1.1 */
-    lazy val bodyString: String =
-      new String(body, charset)
-
-    /** @return body as a UTF-8 string */
-    lazy val bodyStringUTF8: String =
-      new String(body, "UTF-8")
-
-    /**
-     * Obtain the value of a header with a given name, if known.
-     * If several same-named headers are present, either may be returned.
-     */
-    def findHeader(headerName: String): Option[String] = headers find (_._1 == headerName) map (_._2)
-
-    /** @return Content-Type header, if known. */
-    lazy val contentTypeOption: Option[String] = findHeader(`Content-Type`)
-
-    /** @return Content-Encoding header, if known. */
-    lazy val contentEncodingOption: Option[String] = findHeader(`Content-Encoding`)
   }
 
   //
@@ -132,11 +99,6 @@ trait ApacheHttpHelpers {
 }
 
 object ApacheHttpHelpers extends ApacheHttpHelpers {
-  object Headers {
-    val `Content-Type` = "Content-Type"
-    val `Content-Encoding` = "Content-Encoding"
-  }
-
   /** SSL context which completely disables certificate detailed checks */
   override val trustAllSslContext: SSLContext = {
     val trustAllCerts = Array[TrustManager](
