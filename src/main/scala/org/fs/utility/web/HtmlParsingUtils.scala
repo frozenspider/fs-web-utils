@@ -4,12 +4,31 @@ import scala.xml._
 
 import org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
 
+import javax.xml.parsers.SAXParserFactory
+
+/**
+ * Utilities for basic HTML parsing
+ *
+ * @author FS
+ */
 trait HtmlParsingUtils {
-  private val saxFactory = new SAXFactoryImpl()
+  import HtmlParsingUtils._
 
   def parseElement(bodyString: String): Elem = {
     val xmlParser = XML.withSAXParser(saxFactory.newSAXParser())
     xmlParser.loadString(bodyString)
+  }
+
+  /** More appropriate version of trim than commons-lang3's StringUtils.strip() */
+  private def trim(s: String): String = {
+    def isNotSpace(c: Char) = !Character.isWhitespace(c) && !Character.isSpaceChar(c)
+    val startIdx = s.indexWhere(isNotSpace)
+    if (startIdx == -1)
+      ""
+    else {
+      val endIdx = s.lastIndexWhere(isNotSpace)
+      s.substring(startIdx, endIdx + 1)
+    }
   }
 
   implicit class HtmlNodeSeq(ns: NodeSeq) {
@@ -34,18 +53,8 @@ trait HtmlParsingUtils {
         case _             => Seq.empty
       }
   }
-
-  /** More appropriate version of trim than commons-lang3's StringUtils.strip() */
-  private def trim(s: String): String = {
-    def isNotSpace(c: Char) = !Character.isWhitespace(c) && !Character.isSpaceChar(c)
-    val startIdx = s.indexWhere(isNotSpace)
-    if (startIdx == -1)
-      ""
-    else {
-      val endIdx = s.lastIndexWhere(isNotSpace)
-      s.substring(startIdx, endIdx + 1)
-    }
-  }
 }
 
-object HtmlParsingUtils extends HtmlParsingUtils
+object HtmlParsingUtils extends HtmlParsingUtils {
+  val saxFactory: SAXParserFactory = new SAXFactoryImpl()
+}

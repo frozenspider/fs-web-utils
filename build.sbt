@@ -3,9 +3,6 @@ version      := "0.4.1"
 scalaVersion := "2.11.8"
 crossScalaVersions := Seq("2.11.8", "2.12.1")
 
-EclipseKeys.withSource := true
-EclipseKeys.createSrc  := EclipseCreateSrc.Default
-
 libraryDependencies ++= Seq(
   "org.apache.httpcomponents" %  "httpclient"      % "4.5.3",
   "org.scala-lang.modules"    %% "scala-xml"       % "1.0.5",
