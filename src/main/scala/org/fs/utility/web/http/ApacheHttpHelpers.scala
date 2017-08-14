@@ -8,6 +8,7 @@ import scala.collection.JavaConversions._
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import org.apache.http.client._
+import org.apache.http.client.config._
 import org.apache.http.client.methods._
 import org.apache.http.cookie.Cookie
 import org.apache.http.impl.client._
@@ -73,6 +74,23 @@ trait ApacheHttpHelpers {
     def addBasicAuth(username: String, password: String): RequestBuilder = {
       val encoded = Base64.encodeBase64String(s"$username:$password".getBytes("UTF-8"))
       rb.addHeader("Authorization", s"Basic $encoded")
+    }
+
+    /** Set a request, socket and connection timeouts */
+    def addTimeout(timeoutMs: Int): RequestBuilder = {
+      val configBuilder2 = configBuilderCopy
+        .setConnectionRequestTimeout(timeoutMs)
+        .setConnectTimeout(timeoutMs)
+        .setSocketTimeout(timeoutMs)
+      rb.setConfig(configBuilder2.build())
+    }
+
+    /** Create a request config builder using current request config, or a custom one if none is defined yet */
+    def configBuilderCopy: RequestConfig.Builder = {
+      rb.getConfig match {
+        case null => RequestConfig.custom()
+        case x    => RequestConfig.copy(x)
+      }
     }
   }
 
