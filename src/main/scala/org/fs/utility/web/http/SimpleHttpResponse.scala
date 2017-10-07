@@ -7,11 +7,14 @@ import org.apache.http.entity.ContentType
  * @author FS
  */
 case class SimpleHttpResponse(code: Int, headers: Seq[(String, String)], body: Array[Byte]) {
-  /** @return content charset, if specified */
+  /** @return content charset if specified */
   lazy val charsetOption: Option[Charset] =
-    contentTypeOption map ContentType.parse map (_.getCharset)
+    contentTypeOption map ContentType.parse map (_.getCharset) match {
+      case Some(null) => None
+      case otherwise  => otherwise
+    }
 
-  /** @return content charset, if specified, or default ISO-8859-1 as per HTTP/1.1 standard */
+  /** @return content charset if specified, or default ISO-8859-1 as per HTTP/1.1 standard */
   lazy val charset: Charset =
     charsetOption getOrElse ContentType.DEFAULT_TEXT.getCharset
 
