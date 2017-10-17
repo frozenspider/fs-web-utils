@@ -1,7 +1,7 @@
 name         := "fs-web-utils"
 version      := "0.5.2"
-scalaVersion := "2.11.8"
-crossScalaVersions := Seq("2.11.8", "2.12.1")
+scalaVersion := "2.12.3"
+crossScalaVersions := Seq("2.11.11", "2.12.3")
 
 libraryDependencies ++= Seq(
   "org.apache.httpcomponents" %  "httpclient"      % "4.5.3",
