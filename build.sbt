@@ -1,5 +1,5 @@
 name         := "fs-web-utils"
-version      := "0.5.3"
+version      := "0.5.4"
 scalaVersion := "2.12.3"
 crossScalaVersions := Seq("2.11.11", "2.12.3")
 
