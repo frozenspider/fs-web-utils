@@ -40,4 +40,8 @@ case class SimpleHttpResponse(code: Int, headers: Seq[(String, String)], body: A
   /** @return Content-Encoding header, if known. */
   lazy val contentEncodingOption: Option[String] =
     findHeader("Content-Encoding")
+
+  override def toString = {
+    s"SimpleHttpResponse($code, <${body.length} bytes body>, $headers)"
+  }
 }
