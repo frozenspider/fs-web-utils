@@ -103,7 +103,7 @@ trait ApacheHttpHelpers {
         SimpleHttpResponse(
           code = resp.getStatusLine.getStatusCode,
           headers = resp.getAllHeaders map (h => (h.getName -> h.getValue)),
-          body = IOUtils.toByteArray(entity.getContent)
+          body = Option(entity) map (e => IOUtils.toByteArray(e.getContent)) getOrElse Array.emptyByteArray
         )
       } finally {
         EntityUtils.consume(entity)
